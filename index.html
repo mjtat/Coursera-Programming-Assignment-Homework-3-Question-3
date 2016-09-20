@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Coursera Programming Assignment -Homework 3 Question 1 : ">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Coursera Programming Assignment -Homework 3 Question 1</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mjtat/Coursera-Programming-Assignment-Homework-3-Question-3">View on GitHub</a>
+
+          <h1 id="project_title">Coursera Programming Assignment -Homework 3 Question 1</h1>
+          <h2 id="project_tagline"></h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/mjtat/Coursera-Programming-Assignment-Homework-3-Question-3/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/mjtat/Coursera-Programming-Assignment-Homework-3-Question-3/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h3>
+
+<p>This data set is from the John Hopkins University Coursera Course titled: "R Programming". The current examples are pulled from <strong>question 3</strong> of <strong>homework assignment 3</strong>. You can find the text (verbatim) for the assignment below:</p>
+
+<p>Write a function called rankhospital that takes three arguments: the 2-character abbreviated name of a
+state (state), an outcome (outcome), and the ranking of a hospital in that state for that outcome (num).
+The function reads the outcome-of-care-measures.csv and returns a character vector with the name
+of the hospital that has the ranking specied by the num argument. For example, the call rankhospital("MD", "heart failure", 5) would return a character vector containing the name of the hospital with the 5th lowest 30-day death rate for heart failure. The num argument can take values "best", "worst", or an integer indicating the ranking (smaller numbers are better). If the number given by num is larger than the number of hospitals in that state, then the function should return NA. Hospitals that do not have data on a particular outcome should be excluded from the set of hospitals when deciding the rankings.</p>
+
+<p>Handling ties. It may occur that multiple hospitals have the same 30-day mortality rate for a given cause
+of death. In those cases ties should be broken by using the hospital name. For example, in Texas ("TX"),
+the hospitals with lowest 30-day mortality rate for heart failure are shown here.</p>
+
+<p>The data file can be found here: <a href="https://github.com/mjtat/Coursera-Programming-Assignment-Homework-3-Question-3/raw/master/outcome-of-care-measures.csv">Outcomes data</a>.</p>
+
+<p>** The script below will more or less do what the assignment asks.** Note, still working out the small detail about producing "NA" when given a number greater than the number of hospitals in a state. However, I don't it expect it to be extremely difficult with a little time spent debugging.</p>
+
+<hr>
+
+<pre><code>## Read in the data
+
+outcome_dat &lt;-
+    read.csv("outcome-of-care-measures.csv",
+             header = TRUE,
+             stringsAsFactors = FALSE)
+
+## Select only the key variables from the original data.
+outcome_dat_organized &lt;-
+    data.frame(
+        as.character(outcome_dat$Hospital.Name),
+        as.character(outcome_dat$State),
+        outcome_dat$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack,
+        outcome_dat$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure,
+        outcome_dat$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia,
+        stringsAsFactors = FALSE
+    )
+
+# Rename the variables
+names(outcome_dat_organized) &lt;-
+    c("hospital",
+      "state",
+      "heart attack",
+      "heart failure",
+      "pneumonia")
+
+
+#Remove all the NA values.
+outcome_dat_organized$`heart attack`[outcome_dat_organized$`heart attack` == "Not Available"] &lt;-
+    NA
+outcome_dat_organized$`heart failure`[outcome_dat_organized$`heart failure` == "Not Available"] &lt;-
+    NA
+outcome_dat_organized$pneumonia[outcome_dat_organized$pneumonia == "Not Available"] &lt;-
+    NA
+
+outcome_dat_organized &lt;-
+    outcome_dat_organized[complete.cases(outcome_dat_organized), ]
+
+
+rank_hosp &lt;- function(location, outcome, num) {
+    location &lt;- toupper(location)
+
+    outcome &lt;- tolower(outcome)
+
+    states &lt;- outcome_dat_organized$state
+
+    outcomes &lt;- colnames(outcome_dat_organized)
+
+    num_vector &lt;- c(1:1000, "best", "worst")
+
+    y &lt;- match(location, states, nomatch = as.numeric(0))
+
+    z &lt;- match(outcome, outcomes, nomatch = as.numeric(0))
+
+    w &lt;- match(num, num_vector, nomatch = as.numeric(0))
+
+    if (z == 0 &amp;&amp; y == 0 &amp;&amp; w == 0) {
+        print("Invalid State, Outcome, and Rank. Please enter valid values.")
+
+    } else if (z == 0 &amp;&amp; y == 0) {
+        print("Invalid State and Outcome. Please enter valid values.")
+
+    } else if (z == 0) {
+        print("Invalid outcome. Please enter valid outcome.")
+
+    } else if (y == 0) {
+        print("Invalid state. Please enter valid state.")
+
+    } else if (w == 0) {
+        print("Invalid rank. Please enter a valid rank.")
+
+    } else {
+        state_subset &lt;- subset(outcome_dat_organized,
+                               location == state)
+        state_subset$`heart attack` &lt;-
+            as.numeric(state_subset$`heart attack`)
+
+        state_subset$`heart failure` &lt;-
+            as.numeric(state_subset$`heart failure`)
+
+        state_subset$pneumonia &lt;-
+            as.numeric(state_subset$pneumonia)
+
+        state_subset$rank_heartattack &lt;-
+            rank(state_subset$`heart attack`,
+                 ties.method = "min")
+
+        state_subset$rank_heartfailure &lt;-
+            rank(state_subset$`heart failure`,
+                 ties.method = "min")
+
+        state_subset$rank_pneumonia &lt;-
+            rank(state_subset$pneumonia,
+                 ties.method = "min")
+
+        if (outcome == "heart attack") {
+            x &lt;- c("rank_heartattack")
+
+        } else if (outcome == "heart failure") {
+            x &lt;- c("rank_heartfailure")
+
+        } else {
+            x &lt;- c("rank_pneumonia")
+
+        }
+
+
+        rank_dat &lt;-
+            with(state_subset, state_subset[order(state_subset[[x]],
+                                                  state_subset$hospital), ])
+
+
+        if (is.double(num) == TRUE)
+            print(rank_dat$hospital[num])
+
+        if (num == "worst")
+            print(tail(rank_dat$hospital, n = 1))
+
+
+        if (num == "best")
+            print(head(rank_dat$hospital, n = 1))
+
+
+    }
+}
+
+
+## Test the function a few times.
+
+rank_hosp("TX", "heart failure", 4)
+rank_hosp("MD", "heart attack", "worst")
+rank_hosp("AA", "heart attack", 5)
+rank_hosp("AF", "cancer", 5)
+rank_hosp("DE", "pneumonia", "not the best")
+rank_hosp("OH", "pneumonia", 10000)
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Coursera Programming Assignment -Homework 3 Question 1 maintained by <a href="https://github.com/mjtat">mjtat</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
