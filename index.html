@@ -118,13 +118,12 @@ outcome_dat_organized$pneumonia[outcome_dat_organized$pneumonia == "Not Availabl
 
 outcome_dat_organized &lt;-
     outcome_dat_organized[complete.cases(outcome_dat_organized), ]
-</code></pre>
 
-<p>## Create the function 
-    rank_hosp &lt;- function(location, outcome, num) {
-        location &lt;- toupper(location)</p>
+## Create the function 
+rank_hosp &lt;- function(location, outcome, num) {
+    location &lt;- toupper(location)
 
-<pre><code>    outcome &lt;- tolower(outcome)
+    outcome &lt;- tolower(outcome)
 
     states &lt;- outcome_dat_organized$state
 
