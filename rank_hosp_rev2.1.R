@@ -37,7 +37,7 @@ outcome_dat_organized <-
     outcome_dat_organized[complete.cases(outcome_dat_organized), ]
 
 
-###
+### Create the function.
 rank_hosp <- function(location, outcome, num) {
     state_subset <- subset(outcome_dat_organized, location == state)
     
