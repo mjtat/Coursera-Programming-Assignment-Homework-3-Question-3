@@ -56,7 +56,7 @@
 </code></pre>
 
 <p><em>The function should check the validity of its arguments. If an invalid state value is passed to best, the</em>
-<em>function should throw an error via the stop function with the exact message \invalid state". If an invalid</em>
+<em>function should throw an error via the stop function with the exact message "invalid state". If an invalid</em>
 <em>outcome value is passed to best, the function should throw an error via the stop function with the exact</em>
 <em>message "invalid outcome".</em></p>
 
@@ -77,7 +77,7 @@
 
 <p><a href="https://github.com/mjtat/Coursera-Programming-Assignment-Homework-3-Question-3/raw/master/outcome-of-care-measures.csv">Coursera R Programming Homework Assignment 3</a>.</p>
 
-<p><strong>The script below will more or less do what the assignment asks.</strong> Note, still working out the small detail about producing "NA" when <code>num</code> greater than the number of hospitals in a state. However, I don't it expect it to be extremely difficult with a little time spent debugging.</p>
+<p><strong>The script below will do what the assignment asks, with minor cosmetic differences.</strong> </p>
 
 <hr>
 
@@ -119,42 +119,57 @@ outcome_dat_organized$pneumonia[outcome_dat_organized$pneumonia == "Not Availabl
 outcome_dat_organized &lt;-
     outcome_dat_organized[complete.cases(outcome_dat_organized), ]
 
-## Create the function 
-rank_hosp &lt;- function(location, outcome, num) {
-    location &lt;- toupper(location)
 
+###
+rank_hosp &lt;- function(location, outcome, num) {
+    state_subset &lt;- subset(outcome_dat_organized, location == state)
+
+    len &lt;- as.double(length(state_subset$hospital))
+
+
+    if (is.character(num) == TRUE){
+        num &lt;- tolower(num)
+    } else {
+        num &lt;- as.numeric(num)
+    }
+
+    if (num == "best") {
+        num &lt;- 1
+
+    } else if (num == "worst") {
+        num &lt;- len 
+    }
+
+
+    location &lt;- toupper(location)
     outcome &lt;- tolower(outcome)
 
-    states &lt;- outcome_dat_organized$state
+    state_list &lt;- unique(outcome_dat_organized$state)
+    outcome_list &lt;- colnames(outcome_dat_organized)
+    num_list &lt;- c(1:9999)
 
-    outcomes &lt;- colnames(outcome_dat_organized)
+    x &lt;- (as.numeric(location %in% state_list))
+    y &lt;- (as.numeric(outcome %in% outcome_list))
+    z &lt;- (as.numeric(num %in% num_list))
 
-    num_vector &lt;- c(1:1000, "best", "worst")
-
-    y &lt;- match(location, states, nomatch = as.numeric(0))
-
-    z &lt;- match(outcome, outcomes, nomatch = as.numeric(0))
-
-    w &lt;- match(num, num_vector, nomatch = as.numeric(0))
-
-    if (z == 0 &amp;&amp; y == 0 &amp;&amp; w == 0) {
-        print("Invalid State, Outcome, and Rank. Please enter valid values.")
-
-    } else if (z == 0 &amp;&amp; y == 0) {
-        print("Invalid State and Outcome. Please enter valid values.")
-
-    } else if (z == 0) {
-        print("Invalid outcome. Please enter valid outcome.")
-
+    if (x == 0 &amp;&amp; y == 0 &amp;&amp; z == 0) {
+        stop("Invalid state, outcome, and number. Please enter valid values.")
+    } else if (x == 0 &amp;&amp; y == 0) {
+        stop("Invalid state and outcome. Please enter valid values.")
+    } else if (x == 0) {
+        stop("Invalid state. Please enter a valid value")
     } else if (y == 0) {
-        print("Invalid state. Please enter valid state.")
-
-    } else if (w == 0) {
-        print("Invalid rank. Please enter a valid rank.")
-
+        stop("Invalid outcome. Please enter a valid outcome.")
+    } else if (is.character(num) == TRUE)  {
+            if(num != "worst" || num != "best") {
+                stop("The number you entered is invalid. Please enter a valid number.") 
+            }
+    } else if (num &gt; len) {
+        stop("The number you entered is greater than the number of hospitals in that state. Enter a lower number.")
+            } else if (z == 0) {
+        stop("Invalid number. Please enter a valid number.")
     } else {
-        state_subset &lt;- subset(outcome_dat_organized,
-                               location == state)
+
         state_subset$`heart attack` &lt;-
             as.numeric(state_subset$`heart attack`)
 
@@ -177,45 +192,35 @@ rank_hosp &lt;- function(location, outcome, num) {
                  ties.method = "min")
 
         if (outcome == "heart attack") {
-            x &lt;- c("rank_heartattack")
+            column_name &lt;- c("rank_heartattack")
 
         } else if (outcome == "heart failure") {
-            x &lt;- c("rank_heartfailure")
+            column_name &lt;- c("rank_heartfailure")
 
-        } else {
-            x &lt;- c("rank_pneumonia")
-
+        } else { 
+            column_name &lt;- c("rank_pneumonia")
         }
 
-
         rank_dat &lt;-
-            with(state_subset, state_subset[order(state_subset[[x]],
+            with(state_subset, state_subset[order(state_subset[[column_name]],
                                                   state_subset$hospital), ])
 
-
-        if (is.double(num) == TRUE)
+        if (is.numeric(num) == TRUE)
             print(rank_dat$hospital[num])
 
-        if (num == "worst")
-            print(tail(rank_dat$hospital, n = 1))
-
-
-        if (num == "best")
-            print(head(rank_dat$hospital, n = 1))
-
-
     }
+
 }
 
-
-## Test the function a few times.
+## Test it a few times.
 
 rank_hosp("TX", "heart failure", 4)
 rank_hosp("MD", "heart attack", "worst")
-rank_hosp("AA", "heart attack", 5)
+rank_hosp("MN", "heart attack", 5000)
+rank_hosp("AL", "heart attack", 5)
 rank_hosp("AF", "cancer", 5)
-rank_hosp("DE", "pneumonia", "not the best")
-rank_hosp("OH", "pneumonia", 10000)
+rank_hosp("DE", "pneumonia", "best")
+rank_hosp("OH", "pneumonia", "not always the best")
 </code></pre>
 
 <h3>
@@ -227,17 +232,22 @@ rank_hosp("OH", "pneumonia", 10000)
 &gt; rank_hosp("MD", "heart attack", "worst")
 [1] "HARFORD MEMORIAL HOSPITAL"
 
-&gt; rank_hosp("AA", "heart attack", 5)
-[1] "Invalid state. Please enter valid state."
+&gt; rank_hosp("MN", "heart attack", 5000)
+  Error in rank_hosp("MN", "heart attack", 5000) : 
+    The number you entered is greater than the number of hospitals in that state. Enter a lower number.
 
+&gt; rank_hosp("AL", "heart attack", 5)
+[1] "PRATTVILLE BAPTIST HOSPITAL"
 &gt; rank_hosp("AF", "cancer", 5)
-[1] "Invalid State and Outcome. Please enter valid values."
+ Error in rank_hosp("AF", "cancer", 5) : 
+   Invalid state and outcome. Please enter valid values.
 
-&gt; rank_hosp("DE", "pneumonia", "not the best")
-[1] "Invalid rank. Please enter a valid rank."
+&gt; rank_hosp("DE", "pneumonia", "best")
+[1] "BEEBE MEDICAL CENTER"
 
-&gt; rank_hosp("OH", "pneumonia", 10000)
-[1] "Invalid rank. Please enter a valid rank."
+&gt; rank_hosp("OH", "pneumonia", "not always the best")
+Error in rank_hosp("OH", "pneumonia", "not always the best") : 
+  The number you entered is invalid. Please enter a valid number.
 </code></pre>
       </section>
     </div>
