@@ -81,6 +81,9 @@
 
 <hr>
 
+<h3>
+<a id="first-read-in-the-data-organize-it-into-a-new-dataframe-then-rename-the-columns" class="anchor" href="#first-read-in-the-data-organize-it-into-a-new-dataframe-then-rename-the-columns" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>First read in the data, organize it into a new dataframe, then rename the columns.</h3>
+
 <pre><code>## Read in the data
 
 outcome_dat &lt;-
@@ -106,9 +109,12 @@ names(outcome_dat_organized) &lt;-
       "heart attack",
       "heart failure",
       "pneumonia")
+</code></pre>
 
+<h3>
+<a id="remove-all-na-values" class="anchor" href="#remove-all-na-values" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Remove all NA values.</h3>
 
-#Remove all the NA values.
+<pre><code>#Remove all the NA values.
 outcome_dat_organized$`heart attack`[outcome_dat_organized$`heart attack` == "Not Available"] &lt;-
     NA
 outcome_dat_organized$`heart failure`[outcome_dat_organized$`heart failure` == "Not Available"] &lt;-
@@ -118,32 +124,50 @@ outcome_dat_organized$pneumonia[outcome_dat_organized$pneumonia == "Not Availabl
 
 outcome_dat_organized &lt;-
     outcome_dat_organized[complete.cases(outcome_dat_organized), ]
+</code></pre>
 
+<h3>
+<a id="create-the-rank_hosp-function" class="anchor" href="#create-the-rank_hosp-function" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create the <code>rank_hosp()</code> function.</h3>
 
-###
+<pre><code>###
 rank_hosp &lt;- function(location, outcome, num) {
-    state_subset &lt;- subset(outcome_dat_organized, location == state)
+</code></pre>
+
+<h3>
+<a id="this-part-in-the-function-evaluates-the-number-of-hospitals-in-a-state-given-your-input-parameters" class="anchor" href="#this-part-in-the-function-evaluates-the-number-of-hospitals-in-a-state-given-your-input-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>This part in the function evaluates the number of hospitals in a state, given your input parameters.</h3>
+
+<pre><code>    state_subset &lt;- subset(outcome_dat_organized, location == state)
 
     len &lt;- as.double(length(state_subset$hospital))
+</code></pre>
 
+<h3>
+<a id="this-part-of-the-function-evaluates-if-you-entered-a-string-and-converts-the-string-to-lower-case" class="anchor" href="#this-part-of-the-function-evaluates-if-you-entered-a-string-and-converts-the-string-to-lower-case" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>This part of the function evaluates if you entered a string, and converts the string to lower case.</h3>
 
-    if (is.character(num) == TRUE){
+<pre><code>    if (is.character(num) == TRUE){
         num &lt;- tolower(num)
+
     } else {
         num &lt;- as.numeric(num)
     }
+</code></pre>
 
-    if (num == "best") {
+<h3>
+<a id="this-part-evaluates-if-you-entered-best-or-worst-as-a-value-it-assigns-a-number-1-or-the-value-of-the-last-row-in-the-resulting-data-frame" class="anchor" href="#this-part-evaluates-if-you-entered-best-or-worst-as-a-value-it-assigns-a-number-1-or-the-value-of-the-last-row-in-the-resulting-data-frame" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>This part evaluates if you entered <code>"best"</code> or <code>"worst"</code> as a value. It assigns a number (1, or the value of the last row in the resulting data frame)</h3>
+
+<pre><code>    if (num == "best") {
         num &lt;- 1
 
     } else if (num == "worst") {
         num &lt;- len 
     }
+</code></pre>
 
+<h3>
+<a id="the-next-few-parts-creates-lists-of-states-outcomes-and-numbers-it-then-conducts-a-boolean-operation-to-evaluate-if-the-values-you-entered-are-valid-if-true-sets-the-variable-to-1-if-false-sets-the-variable-to-0" class="anchor" href="#the-next-few-parts-creates-lists-of-states-outcomes-and-numbers-it-then-conducts-a-boolean-operation-to-evaluate-if-the-values-you-entered-are-valid-if-true-sets-the-variable-to-1-if-false-sets-the-variable-to-0" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The next few parts creates lists of states, outcomes, and numbers. It then conducts a boolean operation to evaluate if the values you entered are valid. If <code>TRUE</code>, sets the variable to 1. If <code>FALSE</code>, sets the variable to 0.</h3>
 
-    location &lt;- toupper(location)
+<pre><code>    location &lt;- toupper(location)
     outcome &lt;- tolower(outcome)
-
     state_list &lt;- unique(outcome_dat_organized$state)
     outcome_list &lt;- colnames(outcome_dat_organized)
     num_list &lt;- c(1:9999)
@@ -151,8 +175,12 @@ rank_hosp &lt;- function(location, outcome, num) {
     x &lt;- (as.numeric(location %in% state_list))
     y &lt;- (as.numeric(outcome %in% outcome_list))
     z &lt;- (as.numeric(num %in% num_list))
+</code></pre>
 
-    if (x == 0 &amp;&amp; y == 0 &amp;&amp; z == 0) {
+<h3>
+<a id="the-next-section-does-several-if-loops-to-determine-if-there-are-mismatching-inputs-of-any-sort-and-will-stop-the-function-if-the-user-provides-an-invalid-input" class="anchor" href="#the-next-section-does-several-if-loops-to-determine-if-there-are-mismatching-inputs-of-any-sort-and-will-stop-the-function-if-the-user-provides-an-invalid-input" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The next section does several if loops to determine if there are mismatching inputs of any sort, and will stop the function if the user provides an invalid input.</h3>
+
+<pre><code>    if (x == 0 &amp;&amp; y == 0 &amp;&amp; z == 0) {
         stop("Invalid state, outcome, and number. Please enter valid values.")
     } else if (x == 0 &amp;&amp; y == 0) {
         stop("Invalid state and outcome. Please enter valid values.")
@@ -169,8 +197,12 @@ rank_hosp &lt;- function(location, outcome, num) {
             } else if (z == 0) {
         stop("Invalid number. Please enter a valid number.")
     } else {
+</code></pre>
 
-        state_subset$`heart attack` &lt;-
+<h3>
+<a id="the-next-part-creates-columns-that-rank-each-outcome-it-then-uses-if-loops-to-rename-them" class="anchor" href="#the-next-part-creates-columns-that-rank-each-outcome-it-then-uses-if-loops-to-rename-them" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The next part creates columns that rank each outcome. It then uses if loops to rename them.</h3>
+
+<pre><code>        state_subset$`heart attack` &lt;-
             as.numeric(state_subset$`heart attack`)
 
         state_subset$`heart failure` &lt;-
@@ -200,8 +232,12 @@ rank_hosp &lt;- function(location, outcome, num) {
         } else { 
             column_name &lt;- c("rank_pneumonia")
         }
+</code></pre>
 
-        rank_dat &lt;-
+<h3>
+<a id="create-one-more-data-frame-then-searches-for-the-cell-number-that-the-user-input" class="anchor" href="#create-one-more-data-frame-then-searches-for-the-cell-number-that-the-user-input" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create one more data frame, then searches for the cell number that the user input.</h3>
+
+<pre><code>        rank_dat &lt;-
             with(state_subset, state_subset[order(state_subset[[column_name]],
                                                   state_subset$hospital), ])
 
